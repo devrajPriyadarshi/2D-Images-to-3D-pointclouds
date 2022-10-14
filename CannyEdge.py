@@ -7,8 +7,7 @@ from matplotlib import pyplot as plt
 
 def CannyEdgeDetection(img):
     edges = cv2.Canny(img, 100, 200)
-
-    cv2.imshow("img", edges)
+    return edges
 
 if __name__ == "__main__":
     
@@ -23,6 +22,7 @@ if __name__ == "__main__":
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    CannyEdgeDetection(img)
+    edges = CannyEdgeDetection(img)
+    cv2.imshow("img", edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
