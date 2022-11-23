@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 
 def CannyEdgeDetection(img):
-    edges = cv2.Canny(img, 100, 200)
+    edges = cv2.Canny(img, 50, 100)
     return edges
 
 if __name__ == "__main__":
