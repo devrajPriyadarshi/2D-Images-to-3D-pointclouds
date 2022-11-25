@@ -1,3 +1,4 @@
 data/*
+testOutputs/*
 .python-version
 torch4BTP

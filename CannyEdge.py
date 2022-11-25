@@ -26,3 +26,6 @@ if __name__ == "__main__":
     cv2.imshow("img", edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    cv2.imwrite("image.jpg", img)
+    cv2.imwrite("edges.jpg", edges)
