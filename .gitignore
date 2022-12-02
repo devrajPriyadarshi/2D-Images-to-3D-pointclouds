@@ -4,3 +4,4 @@ testOutputs/*
 .python-version
 torch4BTP
 .vscode/*
+__pycache__/*
