@@ -1,4 +1,6 @@
 data/*
+DATASET/*
 testOutputs/*
 .python-version
 torch4BTP
+.vscode/*

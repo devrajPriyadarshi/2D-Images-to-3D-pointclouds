@@ -63,7 +63,7 @@ def gaussianBlock(sigma, k = 5):
     arr = np.zeros((k,k), dtype=np.float32)
     for i in range(k):
         for j in range(k):
-            arr[i][j] = math.exp(-math.sqrt((i-k//2)**2 + (j-k//2)**2)/(2*sigma*sigma))
+            arr[i][j] = math.exp(-math.sqrt((i-k//2)**2 + (j-k//2)**2)/(2*sigma))
     return arr
 
 # print(gaussianBlock(0.1))
@@ -116,7 +116,7 @@ def DifferentialProjectionModule(s,ss, writeOutput = False):
     fx = fy = 120
     u0 = v0 = 32
     # R = np.array([  [ 1, 0, 0], [ 0, 1, 0], [ 0, 0, 1]])
-    R = eul2rot([0,0,np.pi/2])
+    R = eul2rot([0,0,0])
     K = np.array([  [ fx, 0, u0], [ 0, fy, v0], [ 0, 0, 1]])
     T = np.array([  [ 0], [0 ], [ 2.5]])
     ext = np.array(np.bmat([R, T]))
@@ -133,6 +133,19 @@ def DifferentialProjectionModule(s,ss, writeOutput = False):
         y = np.array([ y[0], y[1], y[2] ])
         new_p.append([y[0][0]/y[2][0], y[1][0]/y[2][0], 1])
 
+    xmean = ymean = n = 0
+    for p in new_p:
+        xmean += p[0]
+        ymean += p[1]
+        n+=1
+    
+    xmean /= n
+    ymean /= n
+
+    print(xmean)
+    print(ymean)
+
+
     x, y, z = [ x[0] for x in new_p], [ x[1] for x in new_p], [ x[2] for x in new_p]
     if not writeOutput:
         fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
@@ -140,8 +153,9 @@ def DifferentialProjectionModule(s,ss, writeOutput = False):
 
     proj_arr = np.zeros((64,64),dtype=np.float32)
     k = 5
-    g = gaussianBlock(sigma=0.5, k=5)
+    g = gaussianBlock(sigma=0.2, k=10)
     proj_W = proj_H = 64
+
     for p in new_p:
         x = round(p[0])
         y = round(p[1])
