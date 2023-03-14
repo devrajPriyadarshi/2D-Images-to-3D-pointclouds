@@ -5,3 +5,4 @@ testOutputs/*
 torch4BTP
 .vscode/*
 __pycache__/*
+PointCloudDatasets/*
