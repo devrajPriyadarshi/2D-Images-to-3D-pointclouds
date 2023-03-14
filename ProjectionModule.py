@@ -9,36 +9,6 @@ import plotly.graph_objects as go
 import numpy as np
 import math
 
-# 02958343
-# 19d35f3e0c0b402125ddb89f02fe6cc0
-# 02958343
-# ./data/gt/downsampled/02958343/19d35f3e0c0b402125ddb89f02fe6cc0.mat
-
-# 03001627
-# 583deb9e5cf939a9daeb838d0771f3b5
-# 03001627
-# ./data/gt/downsampled/03001627/583deb9e5cf939a9daeb838d0771f3b5.mat
-
-# 02958343
-# a74c1aa71334c6af20363e2561dd589a
-# 02958343
-# ./data/gt/downsampled/02958343/a74c1aa71334c6af20363e2561dd589a.mat
-
-# 02958343
-# 8fadf13734ff86b5f9e6f9c7735c6b41
-# 02958343
-# ./data/gt/downsampled/02958343/8fadf13734ff86b5f9e6f9c7735c6b41.mat
-
-# 02958343
-# 8fadf13734ff86b5f9e6f9c7735c6b41
-# 02958343
-# ./data/gt/downsampled/02958343/8fadf13734ff86b5f9e6f9c7735c6b41.mat
-
-# 02691156
-# ed4aaf81dc577bedac4f72bf08dc79a6
-# 02691156
-# ./data/gt/downsampled/02691156/ed4aaf81dc577bedac4f72bf08dc79a6.mat
-
 def CannyEdgeDetection(img):
     edges = cv2.Canny(img, 50, 100)
     return edges
@@ -66,9 +36,6 @@ def gaussianBlock(sigma, k = 5):
             arr[i][j] = math.exp(-math.sqrt((i-k//2)**2 + (j-k//2)**2)/(2*sigma))
     return arr
 
-# print(gaussianBlock(0.1))
-# print(gaussianBlock(1))
-# print(gaussianBlock(10))
 
 def eul2rot(theta) :
     R = np.array([[np.cos(theta[1])*np.cos(theta[2]),       np.sin(theta[0])*np.sin(theta[1])*np.cos(theta[2]) - np.sin(theta[2])*np.cos(theta[0]),      np.sin(theta[1])*np.cos(theta[0])*np.cos(theta[2]) + np.sin(theta[0])*np.sin(theta[2])],
@@ -79,13 +46,6 @@ def eul2rot(theta) :
 def DifferentialProjectionModule(s,ss, writeOutput = False):
     
     data_folder = "./data/renders"
-
-    # sub_folder = str(random.choice( os.listdir( data_folder)))
-    # sub_sub_folder = str(random.choice( os.listdir( data_folder + "/" + sub_folder)))
-    # img_file = data_folder + "/" + sub_folder + "/" + sub_sub_folder + "/render_"+ str(random.randint(0,4)) + ".png"
-
-    # data_folder = "./data/gt/downsampled"
-    # mat_file = data_folder + "/" + sub_folder + "/" + sub_sub_folder + ".mat"
 
     sub_folder = s
     sub_sub_folder = ss
@@ -144,7 +104,6 @@ def DifferentialProjectionModule(s,ss, writeOutput = False):
 
     print(xmean)
     print(ymean)
-
 
     x, y, z = [ x[0] for x in new_p], [ x[1] for x in new_p], [ x[2] for x in new_p]
     if not writeOutput:

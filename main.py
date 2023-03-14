@@ -13,7 +13,7 @@ from torchsummary import summary
 from RepVGG.repvgg import create_RepVGG_A0
 from RepVGG import se_block
 
-from auxilarynet import AuxilaryBranchCNN, Ensemble
+from auxilarynet import AuxilaryBranchCNN
 
 from pointcloudpyramid import PointCloudPyramid, Pyramid_Layer_1, Pyramid_Layer_2, Pyramid_Layer_3
 
@@ -26,18 +26,30 @@ weightsA0 = torch.load("Pretrained_Networks/RepVGG-A0-train.pth")
 MainBranch.load_state_dict(weightsA0)
 
 AuxiliaryBranch = AuxilaryBranchCNN().to(device)
-weights = torch.load("Pretrained_Networks/auxiliaryBranch-01.pth")
-AuxiliaryBranch.load_state_dict(weights)
+weightsAux = torch.load("Pretrained_Networks/Auxiliary_Network.pth")
+AuxiliaryBranch.load_state_dict(weightsAux["model_state_dict"])
 
 PCP = PointCloudPyramid(Pyramid_Layer_1(), Pyramid_Layer_2(), Pyramid_Layer_3()).to(device)
-# weights = torch.load("Pretrained_Networks/auxiliaryBranch-01.pth")
-# AuxiliaryBranch.load_state_dict(weights)
 
-print("\n\n---------------- Main Branch ----------------")
-summary(MainBranch, (3, 128,128))
+class pointCloudGenerator(nn.Module):
+    def __init__(self, mainBranch, auxBranch, pcp):
+        super().__init__()
+        self.mainBranch = mainBranch
+        self.auxBranch = auxBranch
+        self.pcp = pcp
 
-print("\n\n---------------- Auxiliary Branch ----------------")
-summary(AuxiliaryBranch, (1, 128,128))
+    def forward(self, rgbImg, edgeImg):
 
-print("\n\n---------------- Point Cloud Pyramid ----------------")
-summary(PCP, (1, 2000))
+        x1 = self.mainBranch(rgbImg)
+        x2 = self.auxBranch(edgeImg)[0]
+
+        vec = torch.cat(x1,x2)
+
+        pred_PC = self.pcp(vec)
+
+        return pred_PC
+    
+if __name__ == "__main__":
+    net = pointCloudGenerator(MainBranch, AuxiliaryBranch, PCP)
+    print(net)
+
