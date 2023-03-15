@@ -43,7 +43,12 @@ class pointCloudGenerator(nn.Module):
         x1 = self.mainBranch(rgbImg)
         x2 = self.auxBranch(edgeImg)[0]
 
-        vec = torch.cat(x1,x2)
+        print(x1.shape)
+        print(x2.shape)
+
+        vec = torch.cat((x1,x2), dim = 1)
+
+        print(vec.shape)
 
         pred_PC = self.pcp(vec)
 
