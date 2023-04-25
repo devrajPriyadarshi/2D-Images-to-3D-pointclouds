@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from torchsummary import summary
+from torchinfo import summary
 
 class Pyramid_Layer_1(nn.Module):
   def __init__(self):

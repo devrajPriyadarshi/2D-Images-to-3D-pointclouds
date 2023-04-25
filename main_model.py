@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as functional
 import torchvision.transforms as tf
 import torch.optim as optim
-from torchsummary import summary
+from torchinfo import summary
 
 from RepVGG.repvgg import create_RepVGG_A0
 from RepVGG import se_block
@@ -18,7 +18,7 @@ from auxilarynet import AuxilaryBranchCNN
 from pointcloudpyramid import PointCloudPyramid, Pyramid_Layer_1, Pyramid_Layer_2, Pyramid_Layer_3
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device:",device)
+print("device: ",device)
 
 
 MainBranch = create_RepVGG_A0().to(device)
@@ -43,18 +43,23 @@ class pointCloudGenerator(nn.Module):
         x1 = self.mainBranch(rgbImg)
         x2 = self.auxBranch(edgeImg)[0]
 
-        print(x1.shape)
-        print(x2.shape)
+        # print(x1.shape)
+        # print(x2.shape)
 
         vec = torch.cat((x1,x2), dim = 1)
 
-        print(vec.shape)
+        # print(vec.shape)
 
         pred_PC = self.pcp(vec)
 
         return pred_PC
     
 if __name__ == "__main__":
-    net = pointCloudGenerator(MainBranch, AuxiliaryBranch, PCP)
-    print(net)
+    # net = pointCloudGenerator(MainBranch, AuxiliaryBranch, PCP)
+    print("\n"*2)
+    summary(MainBranch, input_size=(32, 3, 128,128))
+    print("\n"*2)
+    summary(AuxiliaryBranch, input_size=(32, 1, 128,128))
+    print("\n"*2)
+    summary(PCP, input_size=(32, 1, 2000))
 

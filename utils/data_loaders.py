@@ -14,15 +14,15 @@ from torch.utils.data import Dataset
 
 from CannyEdge import CannyEdgeDetection
 
-pc_dir = "data/shapenet/ShapeNet_pointclouds/"
-img_dir = "data/shapenet/ShapeNetRendering/"
+pc_dir = "../data/shapenet/ShapeNet_pointclouds/"
+img_dir = "../data/shapenet/ShapeNetRendering/"
 
 def parseTrainData():
     images = []
     models = []
     angles = []
 
-    f = open('data/shapenet/splits/train_models.json')
+    f = open('../data/shapenet/splits/train_models.json')
     data = json.load(f)
 
     labels = data.keys()
@@ -54,7 +54,7 @@ def parseValData():
     models = []
     angles = []
 
-    f = open('data/shapenet/splits/val_models.json')
+    f = open('../data/shapenet/splits/val_models.json')
     data = json.load(f)
 
     labels = data.keys()
