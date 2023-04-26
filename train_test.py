@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+import plotly.graph_objects as go
 
 import torch
 import torchvision
@@ -29,6 +30,7 @@ from validator import validator
 from data_loaders import parseTrainData, parseValData, DatasetLoader
 from custom_losses import TotalLoss
 from CannyEdge import CannyEdgeDetection
+from ProjectionLoss import projectImg, normalizePC
 
 # utils.
 # utils.
@@ -52,31 +54,44 @@ PCP = PointCloudPyramid(Pyramid_Layer_1(), Pyramid_Layer_2(), Pyramid_Layer_3())
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 def training(start_epoch , end_epoch , net , optimizer , criterion , testloader , trainloader):
-    best_accuracy = -1.0
+    best_accuracy = np.inf
     for epoch in range(start_epoch, end_epoch):  
 
         running_loss = 0.0
+        if epoch < 20:
+            a = 1
+            b = 0
+            c = 0
+        elif epoch < 30:
+            a = 0.2
+            b = 0.4
+            c = 0
+        else:
+            a = 0.1
+            b = 0.1
+            c = 0.5
+
         for i, data in enumerate(trainloader, 0):
-            rgb_img, gt_pc = data
+            rgb_img, edge_img, gt_pc = data
 
             rgb_img = rgb_img.to(device)
+            edge_img = edge_img.to(device)
             gt_pc = gt_pc.to(device)
-            edge_img = CannyEdgeDetection(rgb_img)
 
             optimizer.zero_grad()
 
             output = net(rgb_img, edge_img)
-            loss = criterion(output, gt_pc)
+            loss = criterion(output, gt_pc, a, b, c)
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item()
-            if i % 2000 == 2000:    
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+            if i % 20 == 20:    
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
                 running_loss = 0.0
         
-        current_accuracy = validator(testloader=testloader,net=net)
-        if current_accuracy>best_accuracy:
+        current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
+        if current_accuracy < best_accuracy:
             best_accuracy = current_accuracy
             
             torch.save(
@@ -90,7 +105,6 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
 
-
 def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     
     dataiter = iter(trainloader)
@@ -103,6 +117,42 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     optimizer.zero_grad()
     output = net(rgb_img, edge_img)
 
+    # norm_pc = normalizePC(gt_pc)
+
+    # img1 = projectImg(gt_pc.to("cpu"))
+    # img2 = projectImg(output.to("cpu"))
+    # img3 = projectImg(normalizePC(gt_pc).to("cpu"))
+
+    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # x, y, z = [ x[0].item() for x in norm_pc[0]], [ x[1].item() for x in norm_pc[0]], [ x[2].item() for x in norm_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # plt.imshow(img1[1])
+    # plt.show()
+
+    # plt.imshow(img3[1])
+    # plt.show()
+
+    # plt.imshow(img2[1])
+    # plt.show()
+
+    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # npimg = rgb_img[0].to("cpu").numpy()
+    # plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    # # plt.imshow(npimg)
+    # plt.show()
+
+    # npimg = edge_img[0].to("cpu").numpy()
+    # plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    # # plt.imshow(npimg)
+    # plt.show()
     # print(output) 
     # print(gt_pc)
     # print("output: ", output.shape) 
@@ -149,8 +199,6 @@ if __name__ == "__main__":
     testset = DatasetLoader(model_paths = mod_, image_paths = img_, angel_paths = ang_, sourceTransform = transform)
     testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-
-    # classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
     # Get Network:
     logging.info(f"Loading Point Cloud Pyramid...\n")

@@ -18,7 +18,7 @@ from auxilarynet import AuxilaryBranchCNN
 from pointcloudpyramid import PointCloudPyramid, Pyramid_Layer_1, Pyramid_Layer_2, Pyramid_Layer_3
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device: ",device)
+print("device:",device)
 
 
 MainBranch = create_RepVGG_A0().to(device)
