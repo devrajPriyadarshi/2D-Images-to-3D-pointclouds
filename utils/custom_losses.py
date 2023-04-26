@@ -24,17 +24,11 @@ class TotalLoss(nn.Module):
     def forward(self, output, target, a = 1, b = 0, c = 0):
         num_point = output.shape[1]
 
-        if a > 0:
-            chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
-        if b > 0:
-            emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
-        if c > 0:
-            projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
-
-        # print("chf loss: ", chamferLoss.sum())
-        # print("emd loss: ", emdLoss.sum())
-        # print("prj loss: ", projLoss)
+        chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+        emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
+        projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
 
         total_loss = a*chamferLoss.sum() + b*emdLoss.sum() + c*projLoss
+        
 
         return total_loss

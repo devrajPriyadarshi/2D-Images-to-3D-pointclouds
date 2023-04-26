@@ -86,8 +86,8 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
             optimizer.step()
 
             running_loss += loss.item()
-            if i % 20 == 20:    
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
+            if i % 200 == 200:    
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 200:.3f}')
                 running_loss = 0.0
         
         current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
@@ -228,5 +228,5 @@ if __name__ == "__main__":
     optimizer = optim.Adam(parameterToTrain, lr = lr)
     criterion = TotalLoss()
 
-    testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
-    # training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    # testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
