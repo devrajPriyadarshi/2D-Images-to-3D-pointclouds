@@ -12,6 +12,8 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
+from random import sample
+
 from CannyEdge import CannyEdgeDetection
 
 pc_dir = "../data/shapenet/ShapeNet_pointclouds/"
@@ -28,15 +30,24 @@ def parseTrainData():
     labels = data.keys()
     labels = list(labels)
 
-    for class_ in labels:
+    labels2 = ['03001627', '04256520', '04379243'] # chair, sofa, table
+    models_ = 2000
+    render_ = 12
+    for x in labels2:
+        assert x in labels, "Error, class not found"
+            
+
+    for class_ in labels2:
         sub_folders = data[class_]
-        for variations_ in tqdm(sub_folders):
+        sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders_):
             pc_file = pc_dir + variations_ + "/pointcloud_1024.npy"
             # pc = np.load(pc_file)
 
             meta_loc = img_dir + variations_ + "/rendering/rendering_metadata.txt"
             # meta_file = open(meta_loc).readlines()
-            for ang in range(24):
+            # for ang in sample(list(range(24)), render_):
+            for ang in range(10):
                 if ang < 10:
                     img_file = img_dir + variations_ + "/rendering/0"+str(ang)+".png"
                 else:
@@ -60,9 +71,17 @@ def parseValData():
     labels = data.keys()
     labels = list(labels)
 
-    for class_ in labels:
+    labels2 = ['03001627', '04256520', '04379243'] # chair, sofa, table
+    models_ = 100
+    render_ = 12
+    for x in labels2:
+        assert x in labels, "Error, class not found"
+            
+
+    for class_ in labels2:
         sub_folders = data[class_]
-        for variations_ in tqdm(sub_folders):
+        sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders_):
             pc_file = pc_dir + variations_ + "/pointcloud_1024.npy"
             # pc = np.load(pc_file)
 

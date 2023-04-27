@@ -3,13 +3,18 @@ import torch
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device:",device)
 
-def validator(testloader,net, criterion):
+def validator(testloader, net, criterion):
     correct = 0
     total = 0
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
         running_loss = 0
+        # i = 0
         for data in testloader:
+            # i+=1
+            # print(i)
+            # if i>10:
+            #     break
 
             rgb_img, edge_img, gt_pc = data
 
@@ -19,8 +24,10 @@ def validator(testloader,net, criterion):
 
 
             output = net(rgb_img, edge_img)
-            loss = criterion(output, gt_pc, 0, 1, 0)
+            loss = criterion(output, gt_pc, a=1, b=0, c=0)
 
-            running_loss+=loss
-            
+            running_loss+=loss.item()
+
+    print("Total chamfer accuracy: ", running_loss)
+
     return running_loss

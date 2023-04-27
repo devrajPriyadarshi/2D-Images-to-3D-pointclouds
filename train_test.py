@@ -55,21 +55,22 @@ logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 def training(start_epoch , end_epoch , net , optimizer , criterion , testloader , trainloader):
     best_accuracy = np.inf
+    print("Batches:", len(trainloader))
     for epoch in range(start_epoch, end_epoch):  
 
         running_loss = 0.0
-        if epoch < 20:
+        if epoch < 30:
             a = 1
-            b = 0
+            b = 1
             c = 0
-        elif epoch < 30:
+        # elif epoch < 40:
+            # a = 1
+            # b = 1
+            # c = 0
+        else:
             a = 0.2
             b = 0.4
-            c = 0
-        else:
-            a = 0.1
-            b = 0.1
-            c = 0.5
+            c = 1
 
         for i, data in enumerate(trainloader, 0):
             rgb_img, edge_img, gt_pc = data
@@ -86,11 +87,11 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
             optimizer.step()
 
             running_loss += loss.item()
-            if i % 200 == 200:    
+            if i % 200 == 199:    
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 200:.3f}')
                 running_loss = 0.0
         
-        current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
+        current_accuracy = validator(testloader=testloader,net=net, criterion = criterion)
         if current_accuracy < best_accuracy:
             best_accuracy = current_accuracy
             
@@ -117,32 +118,37 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     optimizer.zero_grad()
     output = net(rgb_img, edge_img)
 
-    # norm_pc = normalizePC(gt_pc)
 
-    # img1 = projectImg(gt_pc.to("cpu"))
-    # img2 = projectImg(output.to("cpu"))
-    # img3 = projectImg(normalizePC(gt_pc).to("cpu"))
+
+    # norm_pc = normalizePC(gt_pc[0])
+    # print(gt_pc[0])
+    # img1 = projectImg(gt_pc[0].to("cpu"))
+    # img2 = projectImg(output[0].to("cpu"))
+    # # img3 = projectImg(normalizePC(gt_pc[0][0]).to("cpu"))
 
     # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
     # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
     # fig.show()
 
-    # x, y, z = [ x[0].item() for x in norm_pc[0]], [ x[1].item() for x in norm_pc[0]], [ x[2].item() for x in norm_pc[0]]
-    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    # fig.show()
-
-    # plt.imshow(img1[1])
-    # plt.show()
-
-    # plt.imshow(img3[1])
-    # plt.show()
-
-    # plt.imshow(img2[1])
-    # plt.show()
-
     # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
     # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
     # fig.show()
+
+    # # x, y, z = [ x[0].item() for x in norm_pc[0]], [ x[1].item() for x in norm_pc[0]], [ x[2].item() for x in norm_pc[0]]
+    # # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # # fig.show()
+    # # with np.printoptions(threshold = np.inf):
+    # # print(img1.tolist())
+    # plt.imshow(img1)
+    # plt.show()
+
+    # # plt.imshow(img3[1])
+    # # plt.show()
+
+    # plt.imshow(img2)
+    # plt.show()
+
+
 
     # npimg = rgb_img[0].to("cpu").numpy()
     # plt.imshow(np.transpose(npimg, (1, 2, 0)))
@@ -158,12 +164,14 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     # print("output: ", output.shape) 
     # print("gt_pc : ", gt_pc.shape)
 
-    # a = torch.tensor([[[1., 1., 1.], [1., -1., 1.]]])
-    # b = torch.tensor([[[0., 0., 0.], [1., -1., 1.]]])
+    # a = torch.tensor([[[1., 1., 1.], [1., -1., 1.],[1., -1., 1.]]])
+    # b = torch.tensor([[[0., 0., 0.], [1., -1., 1.],[1., -1., 1.]]])
     # print("a: ", a.shape)
     # print("b: ", b.shape)
 
-    loss = criterion(output, gt_pc)
+    loss = criterion(output, gt_pc, a = 0, b = 1, c = 1)
+    current_accuracy = validator(testloader=testloader,net=net, criterion = criterion)
+    print(current_accuracy)
     
     print("Total Loss: ", loss)
 
@@ -185,16 +193,18 @@ if __name__ == "__main__":
                              tf.ToTensor()
                             #  tf.Normalize((0.5), (0.5))
                              ])
-    batch_size = 24
+    batch_size = 32
     start_epoch = 0
-    end_epoch = 20
-    lr = 0.001
+    end_epoch = 40
+    lr = 0.0005
 
     logging.info(f"Loading Train Dataset dataset...\n")
     img_,mod_,ang_ = parseTrainData()
     trainset = DatasetLoader(model_paths = mod_, image_paths = img_, angel_paths = ang_, sourceTransform = transform)
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
+    print("\n"*2)
+    logging.info(f"Loading Test Dataset dataset...\n")
     img_,mod_,ang_ = parseValData()
     testset = DatasetLoader(model_paths = mod_, image_paths = img_, angel_paths = ang_, sourceTransform = transform)
     testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
@@ -229,4 +239,6 @@ if __name__ == "__main__":
     criterion = TotalLoss()
 
     # testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    # current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
+    # print(current_accuracy)
     training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)

@@ -24,11 +24,51 @@ class TotalLoss(nn.Module):
     def forward(self, output, target, a = 1, b = 0, c = 0):
         num_point = output.shape[1]
 
-        chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
-        emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
-        projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+        total_loss = 0
 
-        total_loss = a*chamferLoss.sum() + b*emdLoss.sum() + c*projLoss
+        if a!=0:
+            chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float), birectional=True, reduction="sum")
+            # print("ch_loss:", chamferLoss)
+            total_loss += a*chamferLoss
         
+        if b!=0:
+            emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
+            # print("emd_loss:", emdLoss)
+            total_loss += b*emdLoss.sum()
+
+        if c!=0:
+            projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+            # print("proj_loss:", projLoss)
+            total_loss += c*projLoss
 
         return total_loss
+        
+        # if a!=0 and b!=0 and c == 0:
+        #     chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+        #     emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
+
+        #     print("ch_loss:", chamferLoss)
+        #     print("emd_loss:", emdLoss)
+
+        #     total_loss = a*chamferLoss.sum() + b*emdLoss.sum() 
+        #     return total_loss
+        
+        # if a!=0 and b == 0 and c == 0:
+
+        #     chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+        #     print("ch_loss:", chamferLoss)
+        #     total_loss = a*chamferLoss.sum() 
+        #     return total_loss
+        
+        # if a==0 and b!=0 and c == 0:
+        #     chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+        #     emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
+        #     projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+
+        #     print("ch_loss:", chamferLoss)
+        #     print("emd_loss:", emdLoss)
+        #     print("proj_loss:", projLoss)
+
+        #     total_loss = a*chamferLoss.sum() + b*emdLoss.sum() + c*projLoss
+    
+        #     return total_loss

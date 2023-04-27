@@ -22,7 +22,8 @@ class Pyramid_Layer_1(nn.Module):
   def forward(self, x):
     x = F.relu(self.lin1(x))
     x = x.reshape([-1,512, 256])
-    x = F.relu(self.conv1D(x))
+    # x = F.relu(self.conv1D(x))
+    x = self.conv1D(x)
     x = torch.reshape(x, (-1, 256, 4, 3))
 
     return x
@@ -40,7 +41,8 @@ class Pyramid_Layer_2(nn.Module):
   def forward(self, x):
     x = F.relu(self.lin1(x))
     x = x.reshape([-1,128, 128])
-    x = F.relu(self.conv1D(x))
+    # x = F.relu(self.conv1D(x))
+    x = self.conv1D(x)
     x = torch.reshape(x, (-1, 128, 2, 3))
 
     return x
@@ -53,7 +55,8 @@ class Pyramid_Layer_3(nn.Module):
     self.lin1 = nn.Linear(in_features=256,out_features=128*3)
 
   def forward(self, x):
-    x = F.relu(self.lin1(x))
+    # x = F.relu(self.lin1(x))
+    x = self.lin1(x)
     x = torch.reshape(x, (-1, 128, 1, 3))
 
     return x

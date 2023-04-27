@@ -83,8 +83,8 @@ def projectImg(pc1):
                         arr_[x4-(i+k//2)][y4-(j+k//2)] = g[i][j]
             proj_arr = proj_arr + arr_
 
-    proj_arr = np.round(proj_arr/np.amax(proj_arr))
-    # proj_img = proj_arr_.astype(np.uint8)
+    proj_arr = proj_arr/np.amax(proj_arr)
+    # proj_img = proj_arr.astype(np.uint8)
 
     return proj_arr
 
