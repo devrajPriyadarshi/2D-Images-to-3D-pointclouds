@@ -115,7 +115,7 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     edge_img = edge_img.to(device)
     gt_pc = gt_pc.to(device)
 
-    optimizer.zero_grad()
+    # optimizer.zero_grad()
     output = net(rgb_img, edge_img)
 
 
@@ -164,14 +164,14 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
     # print("output: ", output.shape) 
     # print("gt_pc : ", gt_pc.shape)
 
-    # a = torch.tensor([[[1., 1., 1.], [1., -1., 1.],[1., -1., 1.]]])
-    # b = torch.tensor([[[0., 0., 0.], [1., -1., 1.],[1., -1., 1.]]])
-    # print("a: ", a.shape)
-    # print("b: ", b.shape)
+    a = torch.tensor([[[1., 1., 1.], [1., -1., 1.], [1., -1., 1.],[1., -1., 1.]]])
+    b = torch.tensor([[[0., 0., 0.], [1., -1., 1.], [1., -1., 1.],[1., -1., 1.]]])
+    print("a: ", a.shape)
+    print("b: ", b.shape)
 
-    loss = criterion(output, gt_pc, a = 0, b = 1, c = 1)
-    current_accuracy = validator(testloader=testloader,net=net, criterion = criterion)
-    print(current_accuracy)
+    loss = criterion(a, b, a = 0, b = 1, c = 0)
+    # current_accuracy = validator(testloader=testloader,net=net, criterion = criterion)
+    # print(current_accuracy)
     
     print("Total Loss: ", loss)
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(parameterToTrain, lr = lr)
     criterion = TotalLoss()
 
-    # testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
     # current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
     # print(current_accuracy)
-    training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    # training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)

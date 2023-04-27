@@ -108,4 +108,4 @@ class projectionLoss(nn.Module):
 
             loss += self.bce(edge1, edge2)
 
-        return loss/pc1_batch.shape[0]
+        return loss

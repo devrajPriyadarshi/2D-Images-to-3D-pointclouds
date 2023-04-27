@@ -27,7 +27,7 @@ class TotalLoss(nn.Module):
         total_loss = 0
 
         if a!=0:
-            chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float), birectional=True, reduction="sum")
+            chamferLoss = self.CD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float), bidirectional=True, reduction="sum")
             # print("ch_loss:", chamferLoss)
             total_loss += a*chamferLoss
         
