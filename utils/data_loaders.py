@@ -19,6 +19,9 @@ from CannyEdge import CannyEdgeDetection
 pc_dir = "../data/shapenet/ShapeNet_pointclouds/"
 img_dir = "../data/shapenet/ShapeNetRendering/"
 
+# fi = open("trainsamples.txt", "w")
+# fo = open("testsamples.txt", "w")
+
 def parseTrainData():
     images = []
     models = []
@@ -46,8 +49,8 @@ def parseTrainData():
 
             meta_loc = img_dir + variations_ + "/rendering/rendering_metadata.txt"
             # meta_file = open(meta_loc).readlines()
-            # for ang in sample(list(range(24)), render_):
-            for ang in range(10):
+            for ang in sample(list(range(24)), render_):
+            # for ang in range(10):
                 if ang < 10:
                     img_file = img_dir + variations_ + "/rendering/0"+str(ang)+".png"
                 else:
@@ -57,7 +60,55 @@ def parseTrainData():
                 models.append(pc_file)
                 images.append(img_file)
                 # angles.append(meta_file[ang])
+    
+    # fi.writelines([str(images), "\n", str(models), "\n"])
+    # fi.close()
+    return images, models, angles
 
+def parseTrainDataNotebook():
+    images = []
+    models = []
+    angles = []
+
+    pc_dir_ = "/kaggle/working/data_/ShapeNet_pointclouds/"
+    img_dir_ = "/kaggle/input/shapenetcorerendering-part1/kaggle/tmp/ShapeNetRendering/"
+
+    f = open('/kaggle/working/data_/splits/train_models.json')
+    data = json.load(f)
+
+    labels = data.keys()
+    labels = list(labels)
+
+    labels2 = ['03001627', '04256520', '04379243'] # chair, sofa, table
+    models_ = 2000
+    render_ = 12
+    for x in labels2:
+        assert x in labels, "Error, class not found"
+            
+
+    for class_ in labels2:
+        sub_folders = data[class_]
+        sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders_):
+            pc_file = pc_dir_ + variations_ + "/pointcloud_1024.npy"
+            # pc = np.load(pc_file)
+
+            meta_loc = img_dir_ + variations_ + "/rendering/rendering_metadata.txt"
+            # meta_file = open(meta_loc).readlines()
+            for ang in sample(list(range(24)), render_):
+            # for ang in range(10):
+                if ang < 10:
+                    img_file = img_dir_ + variations_ + "/rendering/0"+str(ang)+".png"
+                else:
+                    img_file = img_dir_ + variations_ + "/rendering/"+str(ang)+".png"
+                # img = cv2.imread(img_file, cv2.COLOR_BGR2RGB)
+
+                models.append(pc_file)
+                images.append(img_file)
+                # angles.append(meta_file[ang])
+    
+    # fi.writelines([str(images), "\n", str(models), "\n"])
+    # fi.close()
     return images, models, angles
 
 def parseValData():
@@ -87,7 +138,8 @@ def parseValData():
 
             meta_loc = img_dir + variations_ + "/rendering/rendering_metadata.txt"
             # meta_file = open(meta_loc).readlines()
-            for ang in range(24):
+            # for ang in range(24):
+            for ang in sample(list(range(24)), render_):
                 if ang < 10:
                     img_file = img_dir + variations_ + "/rendering/0"+str(ang)+".png"
                 else:
@@ -97,7 +149,54 @@ def parseValData():
                 models.append(pc_file)
                 images.append(img_file)
                 # angles.append(meta_file[ang])
+    # fo.writelines([str(images), "\n", str(models), "\n"])
+    # fo.close()
+    return images, models, angles
 
+def parseValDataNotebook():
+    images = []
+    models = []
+    angles = []
+
+    pc_dir_ = "/kaggle/working/data_/ShapeNet_pointclouds/"
+    img_dir_ = "/kaggle/input/shapenetcorerendering-part1/kaggle/tmp/ShapeNetRendering/"
+
+    f = open('/kaggle/working/data_/splits/val_models.json')
+    data = json.load(f)
+
+    labels = data.keys()
+    labels = list(labels)
+
+    labels2 = ['03001627', '04256520', '04379243'] # chair, sofa, table
+    models_ = 100
+    render_ = 12
+    for x in labels2:
+        assert x in labels, "Error, class not found"
+            
+
+    for class_ in labels2:
+        sub_folders = data[class_]
+        sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders_):
+            pc_file = pc_dir_ + variations_ + "/pointcloud_1024.npy"
+            # pc = np.load(pc_file)
+
+            meta_loc = img_dir_ + variations_ + "/rendering/rendering_metadata.txt"
+            # meta_file = open(meta_loc).readlines()
+            for ang in sample(list(range(24)), render_):
+            # for ang in range(10):
+                if ang < 10:
+                    img_file = img_dir_ + variations_ + "/rendering/0"+str(ang)+".png"
+                else:
+                    img_file = img_dir_ + variations_ + "/rendering/"+str(ang)+".png"
+                # img = cv2.imread(img_file, cv2.COLOR_BGR2RGB)
+
+                models.append(pc_file)
+                images.append(img_file)
+                # angles.append(meta_file[ang])
+    
+    # fi.writelines([str(images), "\n", str(models), "\n"])
+    # fi.close()
     return images, models, angles
 
 class DatasetLoader(Dataset):

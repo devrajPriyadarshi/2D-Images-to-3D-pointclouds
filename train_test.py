@@ -45,7 +45,7 @@ weightsA0 = torch.load("Pretrained_Networks/RepVGG-A0-train.pth")
 MainBranch.load_state_dict(weightsA0)
 
 AuxiliaryBranch = AuxilaryBranchCNN().to(device)
-weightsAux = torch.load("Pretrained_Networks/Auxiliary_Network.pth")
+weightsAux = torch.load("Pretrained_Networks/Auxiliary_Network_edge.pth")
 AuxiliaryBranch.load_state_dict(weightsAux["model_state_dict"])
 
 PCP = PointCloudPyramid(Pyramid_Layer_1(), Pyramid_Layer_2(), Pyramid_Layer_3()).to(device)
@@ -101,7 +101,7 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/PCP.pth')
+                './Pretrained_Networks/PCP_test.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
@@ -195,7 +195,7 @@ if __name__ == "__main__":
                              ])
     batch_size = 32
     start_epoch = 0
-    end_epoch = 40
+    end_epoch = 20
     lr = 0.0005
 
     logging.info(f"Loading Train Dataset dataset...\n")
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(parameterToTrain, lr = lr)
     criterion = TotalLoss()
 
-    testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    # testingLoaders(net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
     # current_accuracy = validator(testloader=testloader,net=net, criterion = TotalLoss())
     # print(current_accuracy)
-    # training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)
+    training(start_epoch = start_epoch, end_epoch = end_epoch, net = net, optimizer = optimizer, criterion = criterion, testloader = testloader, trainloader= trainloader)

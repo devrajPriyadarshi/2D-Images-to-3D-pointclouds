@@ -1,6 +1,7 @@
 import sys
 import logging
 
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -36,7 +37,7 @@ def validator(testloader,net):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    print(f'\nAccuracy of the network on the 10000 test images: {100 * correct // total} %\n')
+    print(f'\nAccuracy of the network on the 10000 test images: {100 * correct / total} %\n')
     return correct/total
 
 def training(start_epoch , end_epoch , net , optimizer , criterion , testloader, trainloader):
@@ -73,12 +74,21 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader,
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/Auxiliary_Network.pth')
+                './Pretrained_Networks/Auxiliary_Network_edge.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
 
-
+class edgeDect(object):
+    def __call__(self, sample):
+        # print("HEYY")
+        kernel = np.ones((5, 5), np.uint8)
+        img = np.array(sample)
+        edge = cv2.erode(img, kernel)
+        edge = cv2.erode(edge, kernel)
+        edge = cv2.erode(edge, np.ones((3, 3), np.uint8))
+        return edge
+    
 # start Traning!
 if __name__ == "__main__":
 
@@ -92,9 +102,9 @@ if __name__ == "__main__":
         logging.info(f"We are training on {device}\n")
 
     # Setup Training Parameters:
-    dataset_path = "./DATASET/cifar-10-python"
     transform = tf.Compose( [tf.Grayscale(),
                              tf.Resize((128,128)),
+                             edgeDect(),
                              tf.ToTensor(),
                              tf.Normalize((0.5), (0.5))])
     batch_size = 32
@@ -103,13 +113,22 @@ if __name__ == "__main__":
     lr = 0.001
     # momentum = 0.9
 
-    logging.info(f"Loading CIFAR-10 dataset...\n")
-    trainset = torchvision.datasets.CIFAR10(root=dataset_path, train=True, download=False, transform=transform)
-    testset = torchvision.datasets.CIFAR10(root=dataset_path, train=False, download=False, transform=transform)
+    # logging.info(f"Loading CIFAR-10 dataset...\n")
+    # dataset_path = "../data/cifar-10-python"
+    # trainset = torchvision.datasets.CIFAR10(root=dataset_path, train=True, download=False, transform=transform)
+    # testset = torchvision.datasets.CIFAR10(root=dataset_path, train=False, download=False, transform=transform)
+    # trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+    # testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
+
+    logging.info(f"Loading MNIST dataset...\n")
+    dataset_path = "../data/MNIST"
+    trainset = torchvision.datasets.MNIST(root=dataset_path, train=True, download=True, transform=transform)
+    testset = torchvision.datasets.MNIST(root=dataset_path, train=False, download=True, transform=transform)
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+    # classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
     # Get Network:
     logging.info(f"Loading Auxiliary Branch...\n")
