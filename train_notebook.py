@@ -59,14 +59,14 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
     for epoch in range(start_epoch, end_epoch):  
 
         running_loss = 0.0
-        if epoch < 40:
+        if epoch < 30:
             a = 1
             b = 1
             c = 0
         # elif epoch < 40:
-            # a = 1
-            # b = 1
-            # c = 0
+            a = 0.2
+            b = 10
+            c = 0
         else:
             a = 0.2
             b = 0.4
@@ -101,7 +101,7 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/PCP_notebook_edge_relu.pth')
+                './Pretrained_Networks/PCP_notebook_FULL_edge_relu.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")

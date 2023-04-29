@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+from PIL import Image
 import plotly.graph_objects as go
 
 import torch
@@ -58,9 +59,10 @@ logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 def testingPCP(net, testloader):
     
     dataiter = iter(testloader)
-
     rgb_img, edge_img, gt_pc = next(dataiter)
+    # print(rgb_img)
     rgb_img = rgb_img.to(device)
+    rg_img_t = rgb_img.clone().detach()
     edge_img = edge_img.to(device)
     gt_pc = gt_pc.to(device)
     output = net(rgb_img, edge_img)
@@ -68,6 +70,13 @@ def testingPCP(net, testloader):
     mi.set_variant("scalar_rgb")
     # print(gt_pc.shape[0])
     for batch_idx in range(gt_pc.shape[0]):
+
+        img = rg_img_t[batch_idx]
+        img = img.cpu().numpy()
+        img = np.transpose(img, (1, 2, 0))
+        img = Image.fromarray((img*255).astype(np.uint8), 'RGB')
+        img = img.save("Images/%s_%s.png" % ("rgmImg", str(batch_idx)))
+
         gt_npy = gt_pc[batch_idx].detach().cpu().numpy()
         op_npy = output[batch_idx].detach().cpu().numpy()
 
@@ -87,6 +96,8 @@ def testingPCP(net, testloader):
 
         np.save("npy_files/%s_%s.npy" % ("gt",str(batch_idx)), gt_npy)
         np.save("npy_files/%s_%s.npy" % ("pred",str(batch_idx)), op_npy)
+
+
 
         # break
 

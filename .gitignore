@@ -10,5 +10,13 @@ PointCloudDatasets/*
 Pretrained_Networks/*
 XMLs/*
 Renders/*
+Images/*
 npy_files/*
 utils/__pycache__/*
+Exp0/*
+Exp1/*
+Exp2/*
+Exp3/*
+Exp4/*
+Exp5/*
+Exp6/*

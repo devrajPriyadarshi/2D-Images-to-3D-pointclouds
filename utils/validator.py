@@ -24,7 +24,7 @@ def validator(testloader, net, criterion):
 
 
             output = net(rgb_img, edge_img)
-            loss = criterion(output, gt_pc, a=1, b=0, c=0)
+            loss = criterion(output, gt_pc, a=0, b=1, c=0)
 
             running_loss+=loss.item()
 

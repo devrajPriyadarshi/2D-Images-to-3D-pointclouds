@@ -131,15 +131,15 @@ def parseValData():
 
     for class_ in labels2:
         sub_folders = data[class_]
-        sub_folders_ = sample(sub_folders, models_)
-        for variations_ in tqdm(sub_folders_):
+        # sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders):
             pc_file = pc_dir + variations_ + "/pointcloud_1024.npy"
             # pc = np.load(pc_file)
 
             meta_loc = img_dir + variations_ + "/rendering/rendering_metadata.txt"
             # meta_file = open(meta_loc).readlines()
-            # for ang in range(24):
-            for ang in sample(list(range(24)), render_):
+            for ang in range(24):
+            # for ang in sample(list(range(24)), render_):
                 if ang < 10:
                     img_file = img_dir + variations_ + "/rendering/0"+str(ang)+".png"
                 else:
@@ -176,15 +176,15 @@ def parseValDataNotebook():
 
     for class_ in labels2:
         sub_folders = data[class_]
-        sub_folders_ = sample(sub_folders, models_)
-        for variations_ in tqdm(sub_folders_):
+        # sub_folders_ = sample(sub_folders, models_)
+        for variations_ in tqdm(sub_folders):
             pc_file = pc_dir_ + variations_ + "/pointcloud_1024.npy"
             # pc = np.load(pc_file)
 
             meta_loc = img_dir_ + variations_ + "/rendering/rendering_metadata.txt"
-            # meta_file = open(meta_loc).readlines()
-            for ang in sample(list(range(24)), render_):
-            # for ang in range(10):
+            meta_file = open(meta_loc).readlines()
+            # for ang in sample(list(range(24)), render_):
+            for ang in range(24):
                 if ang < 10:
                     img_file = img_dir_ + variations_ + "/rendering/0"+str(ang)+".png"
                 else:
@@ -223,8 +223,11 @@ class DatasetLoader(Dataset):
         image = Image.fromarray(image)
         edge = Image.fromarray(edge)
 
+        # image.show()
+
         if self.sourceTransform:
             image = self.sourceTransform(image)
             edge = self.sourceTransform(edge)
+        
 
         return image, edge, gt_pc

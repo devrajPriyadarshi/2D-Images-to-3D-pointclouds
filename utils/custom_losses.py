@@ -33,7 +33,7 @@ class TotalLoss(nn.Module):
         
         if b!=0:
             emdLoss = self.EMD(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))*num_point
-            print("emd_loss:", emdLoss)
+            print("emd_loss:", emdLoss.sum())
             total_loss += b*emdLoss.sum()
 
         if c!=0:
