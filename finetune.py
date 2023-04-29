@@ -59,18 +59,9 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
     for epoch in range(start_epoch, end_epoch):  
 
         running_loss = 0.0
-        if epoch < 30:
-            a = 1
-            b = 1
-            c = 0
-        # elif epoch < 40:
-            # a = 1
-            # b = 1
-            # c = 0
-        else:
-            a = 0.2
-            b = 0.4
-            c = 1
+        a = 1
+        b = 0
+        c = 1
 
         for i, data in enumerate(trainloader, 0):
             rgb_img, edge_img, gt_pc = data
@@ -101,7 +92,7 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/PCP_test_relu_edge_lr0001.pth')
+                './Pretrained_Networks/PCP_test_relu_edge_finetune.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
@@ -117,52 +108,6 @@ def testingLoaders(net, optimizer, criterion, testloader, trainloader):
 
     # optimizer.zero_grad()
     output = net(rgb_img, edge_img)
-
-
-
-    # norm_pc = normalizePC(gt_pc[0])
-    # print(gt_pc[0])
-    # img1 = projectImg(gt_pc[0].to("cpu"))
-    # img2 = projectImg(output[0].to("cpu"))
-    # # img3 = projectImg(normalizePC(gt_pc[0][0]).to("cpu"))
-
-    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
-    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    # fig.show()
-
-    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
-    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    # fig.show()
-
-    # # x, y, z = [ x[0].item() for x in norm_pc[0]], [ x[1].item() for x in norm_pc[0]], [ x[2].item() for x in norm_pc[0]]
-    # # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    # # fig.show()
-    # # with np.printoptions(threshold = np.inf):
-    # # print(img1.tolist())
-    # plt.imshow(img1)
-    # plt.show()
-
-    # # plt.imshow(img3[1])
-    # # plt.show()
-
-    # plt.imshow(img2)
-    # plt.show()
-
-
-
-    # npimg = rgb_img[0].to("cpu").numpy()
-    # plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    # # plt.imshow(npimg)
-    # plt.show()
-
-    # npimg = edge_img[0].to("cpu").numpy()
-    # plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    # # plt.imshow(npimg)
-    # plt.show()
-    # print(output) 
-    # print(gt_pc)
-    # print("output: ", output.shape) 
-    # print("gt_pc : ", gt_pc.shape)
 
     a = torch.tensor([[[1., 1., 1.], [1., -1., 1.], [1., -1., 1.],[1., -1., 1.]]])
     b = torch.tensor([[[0., 0., 0.], [1., -1., 1.], [1., -1., 1.],[1., -1., 1.]]])
@@ -193,10 +138,10 @@ if __name__ == "__main__":
                              tf.ToTensor()
                             #  tf.Normalize((0.5), (0.5))
                              ])
-    batch_size = 32
+    batch_size = 16
     start_epoch = 0
-    end_epoch = 20
-    lr = 0.001
+    end_epoch = 10
+    lr = 0.0001
 
     logging.info(f"Loading Train Dataset dataset...\n")
     img_,mod_,ang_ = parseTrainData()
@@ -213,6 +158,8 @@ if __name__ == "__main__":
     # Get Network:
     logging.info(f"Loading Point Cloud Pyramid...\n")
     net = pointCloudGenerator(MainBranch, AuxiliaryBranch, PCP)
+    weightsPCP = torch.load("Pretrained_Networks/PCP_test.pth")
+    net.load_state_dict(weightsPCP["model_state_dict"])
 
 
     ## Parameter Freezing

@@ -3,6 +3,8 @@ import torch.nn as nn
 
 import numpy as np
 import math
+from math import pi
+from random import uniform
 
 def quaternion_to_euler(x, y, z, w):
   t0 = +2.0 * (w * x + y * z)
@@ -50,18 +52,28 @@ def normalizePC(pc_batch):
 
     return torch.tensor(pc_norm)
 
-def projectImg(pc1):
+def rotatePC(pc, eul = [0,0,0]):
+    R = eul2rot([eul[0],eul[1],eul[2]])
+    new_p = []
+    for x_ in pc:
+        x = x_.T
+        y = R@x
+        y_ = y.T
+        new_p.append(y_)
+    return np.array(new_p)
+
+def projectImg(pc1, eul = [0,0,0]):
 
     fx = fy = 120
     u0 = v0 = 36
-    R = eul2rot([0,0,0])
+    R = eul2rot([eul[0],eul[1],eul[2]])
     K = np.array([  [ fx, 0, u0], [ 0, fy, v0], [ 0, 0, 1]])
     T = np.array([  [ 0], [0 ], [ 2.5]])
     ext = np.array(np.bmat([R, T]))
 
     new_p = []
     for x_ in pc1:
-        x2 = np.array( [ [x_[0].item()], [x_[1].item()], [x_[2].item()], [1] ])
+        x2 = np.array( [ [x_[0]], [x_[1]], [x_[2]], [1] ])
         y2 = K@(ext@x2)
         y2 = np.array([ y2[0], y2[1], y2[2] ])
         new_p.append([y2[0][0]/y2[2][0], y2[1][0]/y2[2][0], 1])
@@ -94,18 +106,26 @@ class projectionLoss(nn.Module):
     def __init__(self):
         super(projectionLoss, self).__init__()
 
-        self.bce = torch.nn.BCELoss(reduction="sum") 
+        self.bce = torch.nn.BCELoss(reduction="sum")
 
     def forward(self, pc1_batch, pc2_batch):
-
         loss = 0
         for i in range(pc1_batch.shape[0]):
-            edge1 = projectImg(pc1_batch[i].detach().to("cpu").numpy())
-            edge2 = projectImg(pc2_batch[i].detach().to("cpu").numpy())
+            pc1 = pc1_batch[i].detach().numpy()
+            pc2 = pc2_batch[i].detach().numpy()
+            Rotations = [
+                # [uniform(0, pi), uniform(0, pi), uniform(0, pi)],
+                # [uniform(0, -pi), uniform(0, -pi), uniform(0, -pi)],
+                [uniform(0, 2*pi), uniform(0, 2*pi), uniform(0, 2*pi)],
+                [uniform(-pi, pi), uniform(-pi, pi), uniform(-pi, pi)]
+            ]
+            for rot in Rotations:
+                edge1 = projectImg(pc1, rot)
+                edge2 = projectImg(pc2, rot)
 
-            edge1 = torch.tensor(edge1.flatten(), requires_grad=True)
-            edge2 = torch.tensor(edge2.flatten(), requires_grad=True)
+                edge1 = torch.tensor(edge1.flatten(), requires_grad=True)
+                edge2 = torch.tensor(edge2.flatten(), requires_grad=True)
 
-            loss += self.bce(edge1, edge2)
+                loss += self.bce(edge1, edge2)
 
         return loss

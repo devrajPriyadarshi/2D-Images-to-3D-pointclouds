@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, 'RepVGG')
 sys.path.insert(0, 'utils')
-
+sys.path.insert(0, 'MitsubaRenderer')
 import logging
 
 import numpy as np
@@ -26,12 +26,14 @@ from main_model import pointCloudGenerator
 from pointcloudpyramid import PointCloudPyramid, Pyramid_Layer_1, Pyramid_Layer_2, Pyramid_Layer_3
 # from chamferdist import ChamferDistance
 
-from validator import validator
-from data_loaders import parseTrainData, parseValData, DatasetLoader
-from custom_losses import TotalLoss
-from CannyEdge import CannyEdgeDetection
-from ProjectionLoss import projectImg, normalizePC
 
+from data_loaders import parseValData, DatasetLoader
+from custom_losses import TotalLoss
+from ProjectionLoss import projectImg, normalizePC, rotatePC
+
+from MitsubaRenderer.render_mitsuba2_pc import main
+import mitsuba as mi
+from math import pi
 # utils.
 # utils.
 # utils.
@@ -62,83 +64,110 @@ def testingPCP(net, testloader):
     edge_img = edge_img.to(device)
     gt_pc = gt_pc.to(device)
     output = net(rgb_img, edge_img)
-    img1 = projectImg(gt_pc[0].to("cpu"))
-    img2 = projectImg(output[0].to("cpu"))
-    x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
-    x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
 
-    plt.subplot(421)
-    plt.imshow(img1)
+    mi.set_variant("scalar_rgb")
+    # print(gt_pc.shape[0])
+    for batch_idx in range(gt_pc.shape[0]):
+        gt_npy = gt_pc[batch_idx].detach().cpu().numpy()
+        op_npy = output[batch_idx].detach().cpu().numpy()
 
-    plt.subplot(422)
-    plt.imshow(img2)
+        gt_npy = rotatePC(gt_npy, [pi, 0, -pi/2])
+        op_npy = rotatePC(op_npy, [pi, 0, -pi/2])
 
-    rgb_img, edge_img, gt_pc = next(dataiter)
-    rgb_img = rgb_img.to(device)
-    edge_img = edge_img.to(device)
-    gt_pc = gt_pc.to(device)
-    output = net(rgb_img, edge_img)
-    img1 = projectImg(gt_pc[0].to("cpu"))
-    img2 = projectImg(output[0].to("cpu"))
-    x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
-    x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
+        main(gt_npy, "gt", str(batch_idx))
+        main(op_npy, "pred", str(batch_idx))
 
-    plt.subplot(423)
-    plt.imshow(img1)
+        scene = mi.load_file("XMLs/%s_%s.xml" % ("gt", str(batch_idx)))
+        img = mi.render(scene, spp=256)
+        mi.util.write_bitmap("Renders/%s_%s.png" % ("gt", str(batch_idx)), img)
 
-    plt.subplot(424)
-    plt.imshow(img2)
+        scene2 = mi.load_file("XMLs/%s_%s.xml" % ("pred", str(batch_idx)))
+        img2 = mi.render(scene2, spp=256)
+        mi.util.write_bitmap("Renders/%s_%s.png" % ("pred", str(batch_idx)), img2)
 
-    rgb_img, edge_img, gt_pc = next(dataiter)
-    rgb_img = rgb_img.to(device)
-    edge_img = edge_img.to(device)
-    gt_pc = gt_pc.to(device)
-    output = net(rgb_img, edge_img)
-    img1 = projectImg(gt_pc[0].to("cpu"))
-    img2 = projectImg(output[0].to("cpu"))
-    x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
-    x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
+        np.save("npy_files/%s_%s.npy" % ("gt",str(batch_idx)), gt_npy)
+        np.save("npy_files/%s_%s.npy" % ("pred",str(batch_idx)), op_npy)
 
-    plt.subplot(425)
-    plt.imshow(img1)
-
-    plt.subplot(426)
-    plt.imshow(img2)
-
-    rgb_img, edge_img, gt_pc = next(dataiter)
-    rgb_img = rgb_img.to(device)
-    edge_img = edge_img.to(device)
-    gt_pc = gt_pc.to(device)
-    output = net(rgb_img, edge_img)
-    img1 = projectImg(gt_pc[0].to("cpu"))
-    img2 = projectImg(output[0].to("cpu"))
-    x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
-    x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
-    fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
-    fig.show()
-
-    plt.subplot(427)
-    plt.imshow(img1)
-
-    plt.subplot(428)
-    plt.imshow(img2)
+        # break
 
 
-    plt.show()
+    # img1 = projectImg(gt_pc[0].to("cpu"))
+    # img2 = projectImg(output[0].to("cpu"))
+    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # plt.subplot(421)
+    # plt.imshow(img1)
+
+    # plt.subplot(422)
+    # plt.imshow(img2)
+
+    # rgb_img, edge_img, gt_pc = next(dataiter)
+    # rgb_img = rgb_img.to(device)
+    # edge_img = edge_img.to(device)
+    # gt_pc = gt_pc.to(device)
+    # output = net(rgb_img, edge_img)
+    # img1 = projectImg(gt_pc[0].to("cpu"))
+    # img2 = projectImg(output[0].to("cpu"))
+    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # plt.subplot(423)
+    # plt.imshow(img1)
+
+    # plt.subplot(424)
+    # plt.imshow(img2)
+
+    # rgb_img, edge_img, gt_pc = next(dataiter)
+    # rgb_img = rgb_img.to(device)
+    # edge_img = edge_img.to(device)
+    # gt_pc = gt_pc.to(device)
+    # output = net(rgb_img, edge_img)
+    # img1 = projectImg(gt_pc[0].to("cpu"))
+    # img2 = projectImg(output[0].to("cpu"))
+    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # plt.subplot(425)
+    # plt.imshow(img1)
+
+    # plt.subplot(426)
+    # plt.imshow(img2)
+
+    # rgb_img, edge_img, gt_pc = next(dataiter)
+    # rgb_img = rgb_img.to(device)
+    # edge_img = edge_img.to(device)
+    # gt_pc = gt_pc.to(device)
+    # output = net(rgb_img, edge_img)
+    # img1 = projectImg(gt_pc[0].to("cpu"))
+    # img2 = projectImg(output[0].to("cpu"))
+    # x, y, z = [ x[0].item() for x in gt_pc[0]], [ x[1].item() for x in gt_pc[0]], [ x[2].item() for x in gt_pc[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+    # x, y, z = [ x[0].item() for x in output[0]], [ x[1].item() for x in output[0]], [ x[2].item() for x in output[0]]
+    # fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='markers', marker=dict(size=0.5))])
+    # fig.show()
+
+    # plt.subplot(427)
+    # plt.imshow(img1)
+
+    # plt.subplot(428)
+    # plt.imshow(img2)
+
+
+    # plt.show()
 
 
 # start Traning!
@@ -158,7 +187,7 @@ if __name__ == "__main__":
                              tf.ToTensor()
                             #  tf.Normalize((0.5), (0.5))
                              ])
-    batch_size = 32
+    batch_size = 12
     start_epoch = 0
     end_epoch = 40
     lr = 0.0005
@@ -188,7 +217,7 @@ if __name__ == "__main__":
         x.requires_grad = False
 
     print("\n")
-    logging.info(f"Starting Training...")
-    logging.info(f"Start Epoch = {start_epoch}, End Epoch = {end_epoch}:\n")
-
-    testingPCP(net = net, testloader = testloader)
+    # logging.info(f"Starting Training...")
+    # logging.info(f"Start Epoch = {start_epoch}, End Epoch = {end_epoch}:\n")
+    with torch.no_grad():
+        testingPCP(net = net, testloader = testloader)

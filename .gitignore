@@ -8,3 +8,7 @@ __pycache__/*
 RepVGG/__pycache__/*
 PointCloudDatasets/*
 Pretrained_Networks/*
+XMLs/*
+Renders/*
+npy_files/*
+utils/__pycache__/*
