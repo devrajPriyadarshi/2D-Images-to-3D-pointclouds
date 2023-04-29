@@ -101,7 +101,7 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/PCP_test.pth')
+                './Pretrained_Networks/PCP_test_relu_edge_lr001.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     batch_size = 32
     start_epoch = 0
     end_epoch = 20
-    lr = 0.0005
+    lr = 0.01
 
     logging.info(f"Loading Train Dataset dataset...\n")
     img_,mod_,ang_ = parseTrainData()
