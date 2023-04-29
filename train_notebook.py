@@ -195,7 +195,7 @@ if __name__ == "__main__":
                              ])
     batch_size = 32
     start_epoch = 0
-    end_epoch = 40
+    end_epoch = 50
     lr = 0.0005
 
     logging.info(f"Loading Train Dataset dataset...\n")
