@@ -59,18 +59,10 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
     for epoch in range(start_epoch, end_epoch):  
 
         running_loss = 0.0
-        if epoch < 30:
-            a = 1
-            b = 1
-            c = 0
-        # elif epoch < 40:
-            a = 0.2
-            b = 10
-            c = 0
-        else:
-            a = 0.2
-            b = 0.4
-            c = 1
+        # if epoch < 30:
+        a = 1
+        b = 0
+        c = 1
 
         for i, data in enumerate(trainloader, 0):
             rgb_img, edge_img, gt_pc = data
@@ -101,7 +93,7 @@ def training(start_epoch , end_epoch , net , optimizer , criterion , testloader 
                 'optimizer_state_dict': optimizer.state_dict()
                 }, 
                 
-                './Pretrained_Networks/PCP_notebook_FULL_edge_relu.pth')
+                './Pretrained_Networks/PCP_notebook_finetune_edge_relu.pth')
 
     logging.info('Finished Training\n')
     logging.info(f"Saved the best network in \"./Pretrained_Networks\" Folder\n")
@@ -213,7 +205,8 @@ if __name__ == "__main__":
     # Get Network:
     logging.info(f"Loading Point Cloud Pyramid...\n")
     net = pointCloudGenerator(MainBranch, AuxiliaryBranch, PCP)
-
+    weightsPCP = torch.load("Pretrained_Networks/PCP.pth")
+    net.load_state_dict(weightsPCP["model_state_dict"])
 
     ## Parameter Freezing
     logging.info(f"Freezing All Parameters...")
