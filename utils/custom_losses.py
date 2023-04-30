@@ -37,7 +37,7 @@ class TotalLoss(nn.Module):
             total_loss += b*emdLoss.sum()
 
         if c!=0:
-            projLoss = self.PL(output.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.float))
+            projLoss = self.PL(output.to(device="cpu", dtype=torch.float), target.to(device="cpu", dtype=torch.float))
             # print("proj_loss:", projLoss)
             total_loss += c*projLoss
 
