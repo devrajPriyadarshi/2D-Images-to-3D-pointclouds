@@ -28,7 +28,7 @@ from pointcloudpyramid import PointCloudPyramid, Pyramid_Layer_1, Pyramid_Layer_
 # from chamferdist import ChamferDistance
 
 
-from data_loaders import parseValData, DatasetLoader
+from data_loaders import parseValData, DatasetLoader, parseTEST
 from custom_losses import TotalLoss
 from ProjectionLoss import projectImg, normalizePC, rotatePC
 
@@ -67,35 +67,43 @@ def testingPCP(net, testloader):
     gt_pc = gt_pc.to(device)
     output = net(rgb_img, edge_img)
 
+    cri = TotalLoss()
+    dist_chf = cri(gt_pc, output, 1,0,0).item()
+    dist_edm = cri(gt_pc, output, 0,1,0).item()
+
+    dist = np.array([dist_chf, dist_edm])
+
     mi.set_variant("scalar_rgb")
     # print(gt_pc.shape[0])
-    for batch_idx in range(gt_pc.shape[0]):
+    # for batch_idx in range(gt_pc.shape[0]):
 
-        img = rg_img_t[batch_idx]
-        img = img.cpu().numpy()
-        img = np.transpose(img, (1, 2, 0))
-        img = Image.fromarray((img*255).astype(np.uint8), 'RGB')
-        img = img.save("Images/%s_%s.png" % ("rgmImg", str(batch_idx)))
+    #     img = rg_img_t[batch_idx]
+    #     img = img.cpu().numpy()
+    #     img = np.transpose(img, (1, 2, 0))
+    #     img = Image.fromarray((img*255).astype(np.uint8), 'RGB')
+    #     img = img.save("Images/%s_%s.png" % ("rgmImg", str(batch_idx)))
 
-        gt_npy = gt_pc[batch_idx].detach().cpu().numpy()
-        op_npy = output[batch_idx].detach().cpu().numpy()
+    #     gt_npy = gt_pc[batch_idx].detach().cpu().numpy()
+    #     op_npy = output[batch_idx].detach().cpu().numpy()
 
-        gt_npy = rotatePC(gt_npy, [pi, 0, -pi/2])
-        op_npy = rotatePC(op_npy, [pi, 0, -pi/2])
+    #     gt_npy = rotatePC(gt_npy, [pi, 0, -pi/2])
+    #     op_npy = rotatePC(op_npy, [pi, 0, -pi/2])
 
-        main(gt_npy, "gt", str(batch_idx))
-        main(op_npy, "pred", str(batch_idx))
+    #     main(gt_npy, "gt", str(batch_idx))
+    #     main(op_npy, "pred", str(batch_idx))
 
-        scene = mi.load_file("XMLs/%s_%s.xml" % ("gt", str(batch_idx)))
-        img = mi.render(scene, spp=256)
-        mi.util.write_bitmap("Renders/%s_%s.png" % ("gt", str(batch_idx)), img)
+    #     scene = mi.load_file("XMLs/%s_%s.xml" % ("gt", str(batch_idx)))
+    #     img = mi.render(scene, spp=256)
+    #     mi.util.write_bitmap("Renders/%s_%s.png" % ("gt", str(batch_idx)), img)
 
-        scene2 = mi.load_file("XMLs/%s_%s.xml" % ("pred", str(batch_idx)))
-        img2 = mi.render(scene2, spp=256)
-        mi.util.write_bitmap("Renders/%s_%s.png" % ("pred", str(batch_idx)), img2)
+    #     scene2 = mi.load_file("XMLs/%s_%s.xml" % ("pred", str(batch_idx)))
+    #     img2 = mi.render(scene2, spp=256)
+    #     mi.util.write_bitmap("Renders/%s_%s.png" % ("pred", str(batch_idx)), img2)
 
-        np.save("npy_files/%s_%s.npy" % ("gt",str(batch_idx)), gt_npy)
-        np.save("npy_files/%s_%s.npy" % ("pred",str(batch_idx)), op_npy)
+    #     np.save("npy_files/%s_%s.npy" % ("gt",str(batch_idx)), gt_npy)
+    #     np.save("npy_files/%s_%s.npy" % ("pred",str(batch_idx)), op_npy)
+
+    np.save("npy_files/%s_%s.npy" % ("chfdist_EDM","table"), dist)
 
 
 # start Traning!
@@ -127,7 +135,7 @@ if __name__ == "__main__":
 
     print("\n"*2)
     logging.info(f"Loading Test Dataset dataset...\n")
-    img_,mod_,ang_ = parseValData()
+    img_,mod_,ang_ = parseTEST(2)
     testset = DatasetLoader(model_paths = mod_, image_paths = img_, angel_paths = ang_, sourceTransform = transform)
     testloader = DataLoader(testset, batch_size=batch_size, shuffle=True, num_workers=2)
 

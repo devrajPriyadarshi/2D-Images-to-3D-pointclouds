@@ -4,6 +4,7 @@ testOutputs/*
 .python-version
 torch4BTP
 .vscode/*
+.vscode/settings.json
 __pycache__/*
 RepVGG/__pycache__/*
 PointCloudDatasets/*

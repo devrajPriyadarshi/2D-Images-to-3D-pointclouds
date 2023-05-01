@@ -94,5 +94,5 @@ class PointCloudPyramid(nn.Module):
 
     return outputPointCloud
 
-# summary(PointCloudPyramid(Pyramid_Layer_1(), Pyramid_Layer_2(), Pyramid_Layer_3()).to(device), input_size = (1, 2000) )
+# summary(PointCloudPyramid(Pyramid_Layer_1(), Pyramid_Layer_2(), Pyramid_Layer_3()), input_size = (1, 2000) )
 
